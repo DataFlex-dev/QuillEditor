@@ -1,0 +1,3 @@
+[submodule "Demo/Libraries/SecureUpload"]
+	path = Demo/Libraries/SecureUpload
+	url = https://github.com/DataFlex-dev/SecureUpload.git

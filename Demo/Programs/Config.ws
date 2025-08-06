@@ -1,0 +1,12 @@
+[Workspace]
+Home=..\
+AppSrcPath=.\AppSrc;.\AppSrc\Dashboard
+AppHTMLPath=.\AppHtml
+BitmapPath=.\Bitmaps
+IdeSrcPath=.\IdeSrc
+DataPath=.\Data
+DDSrcPath=.\DdSrc
+HelpPath=.\Help
+ProgramPath=.\Programs
+FileList=.\Data\Filelist.cfg
+Description=HDE

@@ -1,0 +1,39 @@
+﻿Use cWebView.pkg
+Use cWebPanel.pkg
+Use cWebForm.pkg 
+Use cWebRichTextEditor.pkg
+Use cUserFeedbackDataDictionary.dd
+
+Object oAddFeedback is a cWebView
+    Object oUserFeedback_DD is a cUserFeedbackDataDictionary
+    End_Object
+
+    Set Main_DD to oUserFeedback_DD
+    Set Server to oUserFeedback_DD
+
+    Set piColumnCount to 12
+    Set psCaption to "AddFeedback"
+
+    Object oWebMainPanel is a cWebPanel
+        Set piColumnCount to 12
+        
+        Object oSubject is a cWebForm
+            Set psLabel to "Subject"
+            Set peLabelPosition to lpTop
+            Set piColumnSpan to 12
+            
+            Entry_Item UserFeedback.Subject
+        End_Object
+        
+        Object oInput is a cWebRichTextEditor
+            Set pbFillHeight to True
+            Set piColumnCount to 12
+            
+            Entry_Item UserFeedback.Input
+
+            Set piColumnSpan to 12
+        End_Object
+        
+    End_Object 
+
+End_Object

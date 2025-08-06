@@ -1,0 +1,52 @@
+﻿Use cWebView.pkg
+Use cWebPanel.pkg
+Use cWebForm.pkg 
+Use cWebRichTextViewer.pkg
+Use cWebList.pkg
+Use cWebColumn.pkg
+Use cUserFeedbackDataDictionary.dd
+
+Object oFeedbackSelect is a cWebView
+    Object oUserFeedback_DD is a cUserFeedbackDataDictionary
+    End_Object
+
+    Set Main_DD to oUserFeedback_DD
+    Set Server to oUserFeedback_DD
+
+    Set piColumnCount to 12
+    Set psCaption to "FeedbackSelect"
+    Set pbServerOnShow to True
+    
+    Procedure OnBeforeShow
+        Send FindFromBottom of oSelect
+        Send UpdateHtml of oViewer UserFeedback.Input
+    End_Procedure
+
+    Object oWebMainPanel is a cWebPanel
+        Set piColumnCount to 12
+                
+        Object oSelect is a cWebList
+            Set piColumnSpan to 4
+            Set pbFillHeight to True
+            Set pbServerOnRowClick to True
+            
+            Object oSubject is a cWebColumn
+                Set psCaption to "Subject"
+                
+                Entry_Item UserFeedback.Subject
+            End_Object
+            
+            Procedure OnRowClick String sRowID
+                Send UpdateHtml of oViewer UserFeedback.Input
+            End_Procedure
+        End_Object
+        
+        Object oViewer is a cWebRichTextViewer
+            Set piColumnIndex to 4
+            Set piColumnSpan to 8
+            Set pbFillHeight to True
+            Set pbAllowImages to True
+        End_Object
+    End_Object 
+
+End_Object

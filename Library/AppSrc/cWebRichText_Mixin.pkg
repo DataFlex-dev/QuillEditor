@@ -1,0 +1,101 @@
+Use WinUuid.pkg
+Use VdfBase.pkg
+Use QuillConstants.pkg
+
+Function QuillRoundIt Global Number nBase Integer iPrec Returns Number
+    Number nAdj
+
+    Move 10000000000000 to nAdj
+
+    If (iPrec >= 0) Function_Return ;
+        (Number(Abs(nBase) / nBase) * 0.5 / (Number(Left(nAdj, ((iPrec + 1) ;
+        min 9)))) + nBase / (Number(Left(nAdj, (9 - (iPrec min 8))))) ;
+        * (Number(Left(nAdj, (9 - (iPrec min 8))))))
+
+    If (iPrec >= -5) Function_Return ;
+        (Number(Abs(nBase) / nBase) * 0.5 * (Number(Left(nAdj, (Abs(iPrec) + 1)))) ;
+        + nBase / (Number(Left(nAdj, (Abs(iPrec) + 9)))) ;
+        * (Number(Left(nAdj, (Abs(iPrec) + 9)))))
+
+    Function_Return ;
+        (Number(Abs(nBase) / nBase) * 0.5 * (Number(Left(nAdj, (Abs(iPrec) + 1)))) ;
+        + nBase / (Number(nAdj)) / (Number(Left(nAdj, ((Abs(iPrec) - 4) min 9)))) ;
+        * (Number(nAdj)) * (Number(Left(nAdj, ((Abs(iPrec) - 4) min 9)))))
+End_Function
+
+Function QuillFileSize Global Number nBytes Returns String
+    String sValue
+    Decimal dResult
+    
+    If (nBytes <= 1024) Begin
+        Move (String(nBytes) * "B") to sValue
+    End
+    Else If (nBytes <= 1048576) Begin
+        Move (QuillRoundIt((nBytes / 1024 * 100000) / 100000, 1)) to dResult
+        
+        Move (String(dResult) * "kB") to sValue
+    End
+    Else Begin
+        Move (QuillRoundIt((nBytes / 1048576 * 100000) / 100000, 1)) to dResult
+        
+        Move (String(dResult) * "MB") to sValue
+    End
+    
+    Function_Return sValue
+End_Function
+
+{ ClassType = Mixin }
+Class cWebRichText_Mixin is a Mixin
+    Procedure Define_cWebRichText_Mixin
+        {WebProperty=Server}
+        Property String[] psaImageUUIDs
+        {WebProperty=Client}
+        Property Boolean pbAllowImages  False
+    End_Procedure
+    
+    Function RequestImages String sHtml Returns String
+        String sURL sUUID
+        Integer iLast iVal iEndQuote
+        
+        Repeat
+            Move (Pos('<img', sHtml, iLast + 1)) to iVal
+            If (iVal > 0) Begin
+                Move (Pos('uuid="', sHtml, iVal + 1)) to iVal
+                If (iVal > 0) Begin
+                    Move (Pos('"', sHtml, iVal +6)) to iEndQuote
+                    Move (Mid(sHtml, (iEndQuote-(iVal+6)), (iVal + 6))) to sUUID
+                    
+                    Get RequestImageLink sUUID to sURL
+                    Move (Insert(" src='" + sURL + "'", sHtml, iVal)) to sHtml
+                    Move iVal to iLast
+                End
+            End
+        Until (iVal = 0)
+        Function_Return sHtml
+    End_Function
+
+    Function ImageUUIDsByValue String sOptHtml Returns String[]
+        Integer iLast iVal iEndQuote
+        String sValue
+        String[] saUUIDs
+        
+        If (num_arguments = 0) ;
+            WebGet psValue to sValue
+        Else ;
+            Move sOptHtml to sValue
+        
+        Repeat
+            Move (Pos('<img', sValue, iLast + 1)) to iVal
+            If (iVal > 0) Begin
+                Move (Pos('uuid="', sValue, iVal + 1)) to iVal
+                If (iVal > 0) Begin
+                    Move (Pos('"', sValue, iVal +6)) to iEndQuote
+                    Move (Mid(sValue, (iEndQuote-(iVal+6)), (iVal + 6))) to saUUIDs[(SizeOfArray(saUUIDs))] 
+                    Move iVal to iLast
+                End
+            End
+        Until (iVal = 0)
+        
+        Function_Return saUUIDs
+    End_Procedure
+End_Class

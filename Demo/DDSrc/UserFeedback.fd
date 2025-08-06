@@ -1,0 +1,4 @@
+#REPLACE FILE1 UserFeedback
+#REPLACE UserFeedback.Recnum |FN1,0
+#REPLACE UserFeedback.Subject |FS1,1
+#REPLACE UserFeedback.Input |FS1,2

@@ -1,0 +1,57 @@
+﻿Use cWebView.pkg
+Use cWebPanel.pkg
+Use cWebForm.pkg 
+Use cWebRichTextEditor.pkg
+Use cUserFeedbackDataDictionary.dd
+
+Object oFeedbackCreate is a cWebView
+    Object oUserFeedback_DD is a cUserFeedbackDataDictionary
+    End_Object
+
+    Set Main_DD to oUserFeedback_DD
+    Set Server to oUserFeedback_DD
+
+    Set piColumnCount to 12
+    Set psCaption to "Create feedback"
+
+    Object oWebMainPanel is a cWebPanel
+        Set piColumnCount to 12
+        
+        Object oSubjectForm is a cWebForm
+            Set piColumnSpan to 12
+            Set psLabel to "Subject:"
+            
+            Entry_Item UserFeedback.Subject
+        End_Object
+        
+        Object oFeedbackInput is a cWebRichTextEditor
+            Set piColumnSpan to 12
+            Set pbFillHeight to True
+            
+            Set pbAllowShowHtml to True
+            Set pbAllowCodeSections to True
+            Set pbUseHTMLEncoding to True
+            Set pbFroalaTransformer to True
+            Set pbAllowImages to True
+            Set pbImageResizer to True
+            Set pbAllowTables to True
+            Set piTableColumns to 10
+            Set piTableRows to 10
+            
+            Entry_Item UserFeedback.Input
+
+            Procedure OnFileFinished String sFileName String sLocalPath
+                Forward Send OnFileFinished sFileName sLocalPath
+            End_Procedure
+
+            Function OnFileUpload String sFileName BigInt iBytes String sMime Returns String
+                String sRetVal
+                Forward Get OnFileUpload sFileName iBytes sMime to sRetVal
+                
+                Function_Return sRetVal
+            End_Function
+        End_Object
+        
+    End_Object 
+
+End_Object

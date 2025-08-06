@@ -1,0 +1,122 @@
+﻿Use AllWebAppClasses.pkg
+Use cConnection.pkg
+Use cWebMenuItemLoadView.pkg
+
+Object oApplication is a cApplication
+    Object oConnection is a cConnection
+        Use LoginEncryption.pkg
+    End_Object
+End_Object
+
+Object oWebApp is a cWebApp
+    Set psTheme to "Df_Material"
+    Set peApplicationStateMode to asmHistoryAndUrls
+    Set psEncryptPassword to "^9.?UV@]`i.Tqy&M32.]\Zn#Q=J%Y]HHTz2HNCj?"
+    Set peLoginMode to lmLoginNone
+    
+    Object oCommandbar is a cWebCommandBar                
+        Object oMenuBar is a cWebMenuBar
+            Object oFileMenu is a cWebMenuItem
+                Set psCaption to C_$File
+                
+                Object oPromptMenuItem is a cWebMenuPrompt
+                    Set pbBeginGroup to True
+                End_Object  
+                               
+                Object oFindMenuItem is a cWebMenuFind
+                End_Object  
+
+                Object oNextMenuItem is a cWebMenuFindNext
+                End_Object  
+
+                Object oPreviousMenuItem is a cWebMenuFindPrevious
+                End_Object  
+                
+                Object oLastMenuItem is a cWebMenuFindLast
+                End_Object                
+                                
+                Object oFirstMenuItem is a cWebMenuFindFirst
+                End_Object
+                
+                Object oLoginMenuItem is a cWebMenuItem
+                    Set psCaption to C_$LogIn
+                    Set pbBeginGroup to True
+                    Set psCSSClass to "WebLoginMenuItem"
+
+                    Procedure OnClick
+                        Send RequestLogin to ghoWebSessionManager
+                    End_Procedure
+                    
+                    Procedure OnLoad
+                        Integer eLoginMode
+                        Handle hoLogin
+                        Get GetLoginView to hoLogin
+                        Get peLoginMode to eLoginMode
+                        WebSet pbRender to  (hoLogin and eLoginMode<>lmLoginNone)
+                    End_Procedure  // OnLoad
+                    
+                End_Object  
+
+                Object oLogoutMenuItem is a cWebMenuItem
+                    Set psCaption to C_$LogOut
+                    Set psCSSClass to "WebLogoutMenuItem"
+
+                    Procedure OnClick
+                        Send RequestLogOut of ghoWebSessionManager
+                    End_Procedure
+
+                    Procedure OnLoad
+                        Integer eLoginMode
+                        Handle hoLogin
+                        Get GetLoginView to hoLogin
+                        Get peLoginMode to eLoginMode
+                        WebSet pbRender to  (hoLogin and eLoginMode<>lmLoginNone)
+                    End_Procedure
+                End_Object  
+            End_Object  
+    
+            Object oViewMenu is a cWebMenuItem
+                Set psCaption to C_$View
+
+                Object oCreatefeedbackItem1 is a cWebMenuItemLoadView
+                    Set psCaption to "Create feedback"
+                    Set psLoadViewOnClick to "oFeedbackCreate"
+                End_Object
+
+                Object oFeedbackSelectItem1 is a cWebMenuItemLoadView
+                    Set psCaption to "FeedbackSelect"
+                    Set psLoadViewOnClick to "oFeedbackSelect"
+                End_Object
+            End_Object  
+        End_Object  
+        
+        Object oFindToolBar is a cWebToolBar
+            Object oSaveMenuItem is a cWebMenuSave
+            End_Object
+            
+            Object oFirstMenuItem is a cWebMenuFindFirst
+            End_Object  
+    
+            Object oPreviousMenuItem is a cWebMenuFindPrevious
+            End_Object  
+
+            Object oFindMenuItem is a cWebMenuFind
+            End_Object  
+
+            Object oNextMenuItem is a cWebMenuFindNext
+            End_Object  
+            
+            Object oLastMenuItem is a cWebMenuFindLast
+            End_Object
+        End_Object
+    End_Object
+
+    Use SessionManager.wo
+    Use LoginDialog.wo
+    Use WebResourceManager.wo
+    Use FeedbackCreate.wo
+    Use FeedbackSelect.wo
+    
+End_Object
+
+Send StartWebApp of oWebApp

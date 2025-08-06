@@ -1,0 +1,25 @@
+﻿Use cWebView.pkg
+Use cWebPanel.pkg
+Use cWebForm.pkg 
+
+Object oEditor is a cWebView
+    Set piWidth to 700
+    Set psCaption to "Editor"
+
+    // Your DDO structure will go here
+
+    Object oWebMainPanel is a cWebPanel
+        Set piColumnCount to 12
+        
+        // place controls here.
+        // Your view will grow as controls are added
+        
+        Object oForm is a cWebForm
+            Set piColumnSpan to 0
+            Set psLabel to "Label 1:"
+        End_Object
+        
+        
+    End_Object 
+
+End_Object

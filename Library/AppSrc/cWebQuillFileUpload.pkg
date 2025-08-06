@@ -1,0 +1,388 @@
+Use WinUuid.pkg
+Use GlobalFunctionsProcedures.pkg
+Use cWorkspace.pkg
+Use QuillConstants.pkg
+
+Class cWebQuillFileUpload_Mixin is a Mixin
+
+    Procedure Define_cWebQuillFileUpload
+        
+        Set psAccept to ".jpg,.png"
+        
+        {Visibility=Private}
+        Property String psPrivate_UploadDir // the directory the files get moved to eventually
+        {Visibility=Private}
+        Property String psPrivate_TemporaryDir // the optional directory used as intermediary
+        {Visibility=Private}
+        {WebProperty=Server}
+        Property String[] psaFilesToBeCommited
+        
+        {Category=Behavior}
+        Property Boolean pbTemporaryDir C_QUILL_USE_TEMPORARY_DIR_DEFAULT
+        {Category=Behavior}
+        Property UBigInt pullMaxFileSize C_QUILL_MAX_FILE_SIZE_DEFAULT
+        {Category=Behavior}
+        Property UBigInt pullMaxFileNameLength C_QUILL_MAX_FILE_NAME_LENGTH_DEFAULT
+        {Category=Behavior}
+        Property Boolean pbAutoCommit C_QUILL_AUTO_COMMIT_DEFAULT
+    End_Procedure
+    
+    Procedure End_Define_cWebQuillBaseFileUpload
+        String sPath
+        
+        // Use default paths
+        If (SizeOfString(psPrivate_UploadDir(Self)) = 0) Begin
+            Get psDataPath of (phoWorkspace(ghoApplication)) to sPath
+            Get PathAtIndex of (phoWorkspace(ghoApplication)) sPath 1 to sPath
+            If (Mid(C_QUILL_DEFAULT_BASE_DIR, 1, 2) = ":") Begin
+                Move (C_QUILL_DEFAULT_BASE_DIR + "\" + C_QUILL_DEFAULT_DATA_UPLOAD_DIR) to sPath
+            End
+            Else Begin
+                Move (sPath + "\" + C_QUILL_DEFAULT_BASE_DIR + "\" + C_QUILL_DEFAULT_DATA_UPLOAD_DIR) to sPath
+            End
+            Set psUploadDir to sPath
+        End
+        
+        If (SizeOfString(psPrivate_TemporaryDir(Self)) = 0 and pbTemporaryDir(Self)) Begin
+            Get psDataPath of (phoWorkspace(ghoApplication)) to sPath
+            Get PathAtIndex of (phoWorkspace(ghoApplication)) sPath 1 to sPath
+            If (Mid(C_QUILL_DEFAULT_DATA_TEMP_DIR, 1, 2) = ":") Begin
+                Move (C_QUILL_DEFAULT_BASE_DIR + "\" + C_QUILL_DEFAULT_DATA_TEMP_DIR) to sPath
+            End
+            Else Begin
+                Move (sPath + "\" + C_QUILL_DEFAULT_BASE_DIR + "\" + C_QUILL_DEFAULT_DATA_TEMP_DIR) to sPath
+            End
+            Set psTemporaryDir to sPath
+        End
+    End_Procedure
+    
+    {Category=BehaviorOpt}
+    {MethodType=Property}
+    Procedure Set psUploadDir String sDir
+        Send MakeUploadDirectory (&sDir)
+        Set psPrivate_UploadDir to sDir
+    End_Procedure
+    
+    {Category=BehaviorOpt}
+    {MethodType=Property}
+    Function psUploadDir Returns String
+        Function_Return (psPrivate_UploadDir(Self))
+    End_Function
+    
+    {Category=BehaviorOpt}
+    {MethodType=Property}
+    Procedure Set psTemporaryDir String sDir
+        Send MakeUploadDirectory (&sDir)
+        Set psPrivate_TemporaryDir to sDir
+    End_Procedure
+    
+    {Category=BehaviorOpt}
+    {MethodType=Property}
+    Function psTemporaryDir Returns String
+        Function_Return (psPrivate_TemporaryDir(Self))
+    End_Function
+    
+    {Category=Behavior}
+    { MethodType=Event }
+    Procedure OnFileFinished String sFileName String sLocalPath
+    End_Procedure
+      
+    {Category=Behavior}
+    { MethodType=Event }
+    Procedure OnFileFailed String  sFileName String  sLocalPath Integer iErrorCode String  sErrDetail
+        Error DFERR_PROGRAM (SFormat("Failed to upload file: %1 %2", sFileName, sErrDetail))
+    End_Procedure
+    
+    Function QuillErrToMessage Integer iErr String sFileName Returns String
+        Case Begin
+            Case (iErr = C_QUILL_SUCCESS)
+                Function_Return "File was uploaded successfully."
+                Case Break
+            Case (iErr = C_QUILL_INVALID_UPLOAD_RECORD)
+                Function_Return "Invalid upload record."
+                Case Break
+            Case (iErr = C_QUILL_COULD_NOT_DETERMINE_FILE_SIZE)
+                Function_Return "Unable to determine the file size."
+                Case Break
+            Case (iErr = C_QUILL_UPLOAD_TOO_LARGE)
+                Function_Return "The file is too large."
+                Case Break
+            Case (iErr = C_QUILL_UPLOAD_DIR_NOT_SET_OR_UNAVAILABLE)
+                Function_Return "Upload/Temporary directory not set."
+                Case Break
+            Case (iErr = C_QUILL_FILENAME_TOO_LONG)
+                Function_Return "The filename is too large."
+                Case Break
+            Case (iErr = C_QUILL_FILENAME_ALREADY_EXISTS)
+                Function_Return "The file already exists."
+                Case Break
+            Case (iErr = C_QUILL_FILENAME_DOES_NOT_CONTAIN_EXTENSION)
+                Function_Return (SFormat("'%1', does not contain a valid extension.", sFileName))
+                Case Break
+            Case Else
+                Function_Return "Unspecified error occured."
+                Case Break        
+        Case End
+    End_Function
+    
+    // Internals //////////////////////////////////////////////////////////////////////
+    
+    { Visibility=Private }
+    // Index
+    // Filename
+    // Size
+    // Type
+    
+    // Index
+    // Key
+    Function DoStartUpload Returns String
+        String[][] aFiles 
+        String[][] aResult
+        String sPath sData
+        Integer iFile iTo
+        tWebValueTree tData
+        Handle hoJsonObj
+
+        //  Deserialize file details
+        Get ptActionData to tData
+        ValueTreeDeserializeParameter tData to afiles
+        
+        Move (SizeOfArray(aFiles) - 1) to iTo
+        
+        Send OnUpdateSettings
+        
+        For iFile from 0 to iTo
+            Move aFiles[iFile][0] to aResult[iFile][0]
+            Get GenerateUploadPathForFile aFiles[iFile][1] to sPath
+            
+            If (sPath <> "") Begin
+                Get FileUploadKey of ghoWebResourceManager sPath to aResult[iFile][1]
+            End
+            Else Begin
+                Move "" to aResult[iFile][1]
+            End
+        Loop
+        
+        // Serialize result
+        Get Create (RefClass(cJsonObject)) to hoJsonObj
+        Send DataTypeToJson of hoJsonObj aResult
+        Get Stringify of hoJsonObj to sData
+        Send Destroy of hoJsonObj
+        
+        Function_Return sData
+    End_Function
+    
+    { MethodType=Event }
+    // Here you can load the settings from the database.
+    Procedure OnUpdateSettings
+        // Empty Stub
+    End_Procedure
+
+    { Visibility=Private }
+    Function StrCount String sSearch String sValue Returns UBigInt
+        Integer iPos
+        UBigInt iCount
+        
+        Repeat
+            Move (Pos(sSearch, sValue, iPos)) to iPos
+            If (iPos) Begin
+                Increment iCount
+                Increment iPos
+            End
+        Until (not(iPos))
+        Function_Return iCount
+    End_Function
+    
+    { Visibility=Private }
+    Function GenerateUploadPathForFile String sFileName Returns String
+        Boolean bExists
+        String sPath sTempPath sUUID
+        
+        // Check filename length
+        If (Length(sFileName) > pullMaxFileNameLength(Self)) Begin
+            Send OnFileFailed sFileName "" C_QUILL_FILENAME_TOO_LONG (QuillErrToMessage(Self, C_QUILL_FILENAME_TOO_LONG, sFileName))
+            Function_Return ""
+        End
+        
+        // Make sure we have an extension
+        If (not(StrCount(Self, ".", sFileName))) Begin
+            Send OnFileFailed sFileName "" C_QUILL_FILENAME_DOES_NOT_CONTAIN_EXTENSION (QuillErrToMessage(Self, C_QUILL_FILENAME_DOES_NOT_CONTAIN_EXTENSION, sFileName))
+            Function_Return ""
+        End
+        
+        // Register and set
+        Get TemporaryOrUploadDir to sPath
+        If (SizeOfString(sPath) = 0) Begin
+            Send OnFileFailed sFileName "" C_QUILL_UPLOAD_DIR_NOT_SET_OR_UNAVAILABLE (QuillErrToMessage(Self, C_QUILL_UPLOAD_DIR_NOT_SET_OR_UNAVAILABLE, sFileName))
+            Function_Return ""
+        End
+        Send RegisterUploadFolder of ghoWebResourceManager sPath
+        
+        // Mangle Filename
+        Repeat
+            Get RandomHexUUID to sUUID
+            Move (sPath + sUUID + "." + sFileName) to sTempPath
+            File_Exist sTempPath bExists
+        Until (not(bExists))
+        
+        Function_Return sTempPath
+    End_Function
+    
+    {Visibility=Private}
+    Function IsTemporaryDirEnabled Returns Boolean
+        String sPath
+        
+        Get psTemporaryDir to sPath
+        If (SizeOfString(sPath) = 0 or not(pbTemporaryDir(Self))) Begin
+            Function_Return False
+        End
+        Function_Return True
+    End_Function
+
+    { Visibility=Private }
+    Function DoFileFinishedEx String sFileName String sResourceId Handle hoFileFailed Handle hoFileFinished Returns String
+        Integer iPos
+        Boolean bExists bAutoNaming
+        String sLocalPath sDestPath sTempPath sUUID
+        UBigInt ullSize
+        String[] saFilesToBeCommited
+        
+        // retrieve sLocalPath
+        Get FileUploadKeyToPath of ghoWebResourceManager sResourceId to sLocalPath
+        If (SizeOfString(sLocalPath) = 0) Begin
+            Send hoFileFailed sFileName "" C_QUILL_INVALID_UPLOAD_RECORD  (QuillErrToMessage(Self, C_QUILL_INVALID_UPLOAD_RECORD, sFileName))
+            Function_Return ""
+        End
+        
+        // Check the file size
+        If (pullMaxFileSize(Self) <> 0) Begin
+            Get FileSize sLocalPath to ullSize
+            If (not(ullSize)) Begin
+                Send hoFileFailed sFileName sLocalPath C_QUILL_COULD_NOT_DETERMINE_FILE_SIZE (QuillErrToMessage(Self, C_QUILL_COULD_NOT_DETERMINE_FILE_SIZE, sFileName))
+                Function_Return ""
+            End
+            If (ullSize > pullMaxFileSize(Self)) Begin
+                Send hoFileFailed sFileName sLocalPath C_QUILL_UPLOAD_TOO_LARGE (QuillErrToMessage(Self, C_QUILL_UPLOAD_TOO_LARGE, sFileName))
+                Function_Return ""
+            End
+        End
+        
+        // Move to destination
+        Get psUploadDir to sDestPath
+        
+        // If we are not using temporary directories and auto naming is on, then we are already done.
+        // otherwise we have to move anyway.
+        If (not(IsTemporaryDirEnabled(Self)) and bAutoNaming) Begin
+            Send hoFileFinished sFileName sLocalPath
+            Function_Return sFileName
+        End
+        
+        Move (sDestPath + ExtractFileName(sLocalPath)) to sTempPath
+        File_Exist sTempPath bExists
+        
+        While (bExists)
+            Get RandomHexUUID to sUUID
+            Move (sDestPath + sUUID + "." + sFileName) to sTempPath
+            File_Exist sTempPath bExists
+        Loop
+        
+        Move sTempPath to sDestPath
+        
+        // Move the file
+        If (pbAutoCommit(Self)) Begin            
+            CopyFile sLocalPath to sDestPath
+            EraseFile sLocalPath
+        End
+        Else Begin
+            // Temporary store the temp locations of the files. So that they will be commited whenever a save is being performed manually
+            WebGet psaFilesToBeCommited to saFilesToBeCommited
+            Move sLocalPath to saFilesToBeCommited[(SizeOfArray(saFilesToBeCommited))]
+            WebSet psaFilesToBeCommited to saFilesToBeCommited
+        End
+        
+        Send hoFileFinished sFileName sDestPath
+        Function_Return sFileName
+    End_Function
+    
+    { Visibility=Private }
+    Function DoFileFinished String sFileName String sResourceId Returns String
+        Function_Return (DoFileFinishedEx(Self, sFileName, sResourceId, (RefProc(OnFileFailed)),(RefProc(OnFileFinished)))) 
+    End_Function
+    
+    Procedure CommitFiles
+        Integer iCount iSize 
+        String sUploadDir sNewPath
+        String[] saFilesToBeCommited
+        
+        WebGet psaFilesToBeCommited to saFilesToBeCommited
+        Get psUploadDir to sUploadDir
+        Move (SizeOfArray (saFilesToBeCommited)) to iSize
+        
+        For iCount from 0 to (iSize - 1)
+            Move (sUploadDir + ExtractFileName(saFilesToBeCommited[iCount])) to sNewPath
+            CopyFile saFilesToBeCommited[iCount] to sNewPath
+            EraseFile saFilesToBeCommited[iCount]
+        Loop
+        
+        // Empty the array after the files are commited
+        Move (ResizeArray(saFilesToBeCommited, 0)) to saFilesToBeCommited
+        WebSet psaFilesToBeCommited to saFilesToBeCommited
+    End_Procedure
+    
+    {Visibility=Private}
+    Function TemporaryOrUploadDir Returns String
+        String sPath
+        
+        Get psTemporaryDir to sPath
+        If (SizeOfString(sPath)) Begin
+            Function_Return sPath
+        End
+        Get psUploadDir to sPath
+        Function_Return sPath
+    End_Function
+    
+    {Visibility=Private}
+    Procedure MakeUploadDirectory String ByRef sDir
+        Boolean bExists
+        
+        // File_Exists requires no /
+        If (Right(sDir, 1) = "\" or Right(sDir, 1) = "/") Begin
+            Move (Left(sDir, Length(sDir) - 1)) to sDir
+        End
+        
+        // Create if not exists
+        File_Exist sDir bExists
+        If (not(bExists)) Begin
+            Make_Directory sDir
+            
+            // If it still does not exist cancel
+            File_Exist sDir bExists
+            If (not(bExists)) Begin
+                Error DFERR_PROGRAM "Could not create the upload directory, using previous."
+                Procedure_Return
+            End
+        End
+        
+        // Repair path
+        Move (sDir + "\") to sDir
+    End_Procedure
+    
+    { Visibility=Private }
+    Function FileSize String sFileName Returns UBigInt
+        Integer iVoid
+        Handle hFileFind
+        UBigInt ullSize
+        tWin32FindDataW Win32FindData
+        
+        Move (winFindFirstFileW(sFilename, AddressOf(Win32FindData))) to hFileFind
+        If (hFileFind <> INVALID_HANDLE_VALUE) Begin
+            Move (winFindClose(hFileFind)) to iVoid
+        End
+        
+        Move (MemCopy(AddressOf(ullSize), AddressOf(Win32FindData.nFileSizeLow), 4)) to iVoid
+        Move (MemCopy(AddressOf(ullSize) + 4, AddressOf(Win32FindData.nFileSizeHigh), 4)) to iVoid
+        
+        Function_Return ullSize
+    End_Function
+
+End_Class

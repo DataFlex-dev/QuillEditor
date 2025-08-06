@@ -1,0 +1,87 @@
+Use cWebHtmlBox.pkg
+Use cWebRichText_Mixin.pkg
+
+Class cWebRichTextViewer is a cWebHtmlBox
+    Import_Class_Protocol cWebRichText_Mixin
+    
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        
+        { WebProperty=Server InitialValue = '' Visibility=Private }
+        Property String psSavePath
+        { WebProperty=Server }
+        Property String psDirectoryName "RichTextEditor\Uploads"
+
+        Set psJSClass to "df.WebRichTextViewer"
+        Send Define_cWebRichText_Mixin
+    End_Procedure
+    
+    Function RequestImageLink String sUUIDCollection Returns String
+        String sUrl sFileExtension sTemp
+        String[] sUUIDs
+        Integer iCount
+        WebGet psSavePath to sUrl
+        
+        Move (StrSplitToArray (sUUIDCollection, ":")) to sUUIDs
+        
+        For iCount from 0 to (SizeOfArray(sUUIDs) - 1)
+            Move (sUrl + "\" + sUUIDs[iCount]) to sTemp
+            Get DownloadURL of ghoWebResourceManager sTemp to sUUIDs[iCount]
+        Loop
+
+        Function_Return (StrJoinFromArray(sUUIDs, ":")) 
+    End_Function
+    
+    Procedure UpdateHtml String sHtml
+        String[] asParams
+        Boolean bAllowImages
+        
+        WebGet pbAllowImages to bAllowImages
+        
+        If (bAllowImages) ;
+            Move (RequestImages(Self, sHtml)) to asParams[0]
+        Else ;
+            Move sHtml to asParams[0]
+        
+        Send ClientAction "updateHtml" asParams
+    End_Procedure
+    
+    Procedure UpdateHtmlArray String[] aHtml
+        Error DFERR_PROGRAM "Uninplemented"
+    End_Procedure
+    
+    Procedure RegisterQuillDownLoadFolder
+        String sPath sDataPaths sDataPath sSep sDirectoryName sText
+        Boolean bExists bOk
+        Handle hoWorkspace
+        Integer iPos
+
+        WebGet psDirectoryName to sDirectoryName
+        Move (SysConf(SYSCONF_DIR_SEPARATOR)) to sSep
+        
+        Get psDataPath of (phoWorkspace(ghoApplication)) to sPath
+        Get PathAtIndex of (phoWorkspace(ghoApplication)) sPath 1 to sPath
+
+        If (Right(sPath, 1) <> sSep) Begin
+            Move (sPath - sSep) to sPath
+        End
+        Move (sPath - sDirectoryName) to sPath
+
+        File_Exist sPath bExists
+        If (not(bExists)) Begin
+            Get CreateDirectoryRecursive of ghoWebApp sPath to bOk
+            If (not(bOK)) ;
+                Error DFERR_CANT_CREATE_FILE "Necessary directories could not be created."
+        End
+        Set psSavePath to sPath
+
+        Send RegisterDownloadFolder of ghoWebResourceManager sPath
+    End_Procedure
+
+    Procedure End_Construct_Object
+        WebPublishFunction RequestImageLink
+        
+        Forward Send End_Construct_Object
+        Send RegisterQuillDownLoadFolder
+    End_Procedure
+End_Class

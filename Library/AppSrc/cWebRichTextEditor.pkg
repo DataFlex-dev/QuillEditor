@@ -1,0 +1,368 @@
+Use cWebBaseDEO.pkg
+Use cWebRichText_Mixin.pkg
+Use cWebFileUploadMixin.pkg
+
+#IFDEF SecureUpload_Included
+Use SecureUpload\cWebSecureBaseFileUpload.pkg
+#ELSE
+CompilerWarnings On
+#Warning DFERR_COMPILE "For secure file processing, integrate the SecureUpload library. Continuing without it may expose the system to unsafe uploads."
+CompilerWarnings Off 
+#ENDIF
+Use cWebQuillFileUpload.pkg
+
+Class cWebRichTextEditor is a cWebBaseDEO
+    Import_Class_Protocol cWebRichText_Mixin
+    Import_Class_Protocol cWebFileUploadMixin
+    
+    #IFDEF SecureUpload_Included
+    Import_Class_Protocol cWebSecureBaseFileUpload_Mixin
+    Import_Class_Protocol cWebQuillFileUpload_Mixin cWebRichTextEditor End_Define_cWebQuillBaseFileUpload
+    #ELSE
+    Import_Class_Protocol cWebQuillFileUpload_Mixin
+    #ENDIF
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        
+        Send Define_cWebRichText_Mixin
+        Send DefineWebFileUploadMixin
+        
+        #IFDEF SecureUpload_Included
+        Send Define_cWebSecureBaseFileUpload
+        #ELSE
+        Send Define_cWebQuillFileUpload
+        #ENDIF
+        
+        Set psJSClass to "df.WebRichTextEditor"
+        Set pbShowLabel to False
+        
+        {WebProperty=Client}
+        {Visibility=Private}
+        Property String psVersion            "1.6.0"
+        {WebProperty=Client}
+        Property Integer piHeight             -1
+        {WebProperty=Client}
+        Property String psPlaceholder         ""
+        {WebProperty=Client}
+        Property String psCSSClass            ""
+        {WebProperty=Client}
+        Property Boolean pbAllowShowHtml      False
+        {WebProperty=Client}
+        Property Boolean pbAllowCodeSections  False
+        {WebProperty=Client}
+        Property Boolean pbUseHTMLEncoding    False
+        {WebProperty=Client}
+        Property Boolean pbFroalaTransformer  False
+        {WebProperty=Client}
+        Property Boolean pbImageResizer       False
+        {WebProperty=Client}
+        Property Boolean pbInlineImages       False
+        
+        {WebProperty=Client}
+        Property String psFonts               "Arial,Courier,Garamond,Tahoma,Times New Roman,Verdana,Inconsolata,Roboto,Mirza,Monospace,Calibri"
+        {WebProperty=Client}
+        Property String psSizes               "8px,9px,10px,11px,12px,13px,14px,16px,18px,20px,22px,24px,26px,28px,30px,32px"
+        
+        
+        {WebProperty=Client}
+        {Visibility=Private}
+        Property Boolean pbPrivateChanged     False
+
+        {WebProperty=Client}
+        {Visibility=Private}
+        Property Integer piSelStart           0
+        
+        {WebProperty=Client}
+        {Visibility=Private}
+        Property Integer piSelEnd             0
+        
+        {WebProperty=Client}
+        {Visibility=Private}
+        Property String psSelection           ""
+        
+        {WebProperty=Client}
+        Property Boolean pbAllowTables        False
+        {WebProperty=Client}
+        Property Integer piTableColumns       5
+        {WebProperty=Client}
+        Property Integer piTableRows          6
+        
+        {WebProperty=Client}
+        Property Boolean pbServerOnSelectionChanged False
+        
+        {WebProperty=Client}
+        Property String psClientOnSelectionChanged ""
+        
+        Property UInteger puiUploadLimit      5242880
+
+        Set pbShowDialog to False
+    End_Procedure
+    
+    { Description="Inserts plainText at current selection/cursor position" }
+    Procedure InsertPlainTextAtCursor String sParam
+        String[] aParams
+        tWebValueTree tVT
+        
+        Move sParam to aParams[0]
+        Send ClientAction "insertPlainTextatCursor" aParams tVT
+    End_Procedure
+    
+    { Description="Returns beginning position of selection" }
+    Function SelStart Returns Integer
+        Integer iIndex
+        If (not(AppSynching(Self))) Begin
+            WebGet piSelStart to iIndex    
+        End
+        Function_Return iIndex
+    End_Function
+    
+    { Description="Returns end position of selection" }
+    Function SelEnd Returns Integer
+        Integer iIndex
+        If (not(AppSynching(Self))) Begin
+            WebGet piSelEnd to iIndex    
+        End
+        Function_Return iIndex
+    End_Function
+    
+    { Description="Returns selection" }
+    Function Selection Returns String
+        String sSelection
+        If (not(AppSynching(Self))) Begin
+            WebGet psSelection to sSelection
+        End
+        Function_Return sSelection
+    End_Function
+    
+    { Description="Sets the selection" }
+    Procedure SetSelection Integer iStartSelection Integer iEndSelection
+        String[] aParams
+        
+        Move iStartSelection to aParams[0]
+        Move iEndSelection to aParams[1]
+        
+        Send ClientAction "setSelection" aParams
+    End_Procedure
+    
+    {MethodType=Event}
+    Procedure OnSelectionChanged
+    End_Procedure
+    
+    {MethodType=Property}
+    Procedure Set Text String sText
+        Boolean bActive bAppSynching
+        Handle hoDD
+        
+        Get Active_State to bActive
+        Get AppSynching to bAppSynching
+
+        If (bActive and not(bAppSynching)) Begin
+            Send ClearHistory
+            WebSet psValue to sText
+        End
+        Else Begin
+            Set psValue to sText
+        End
+    End_Procedure
+    
+    {MethodType=Property}
+    Function Text Returns String
+        String sText
+        WebGet psValue to sText
+        Function_Return sText
+    End_Procedure
+    
+    Function HasChanged Returns Boolean
+        Boolean bPrivateChanged
+        WebGet pbPrivateChanged to bPrivateChanged
+        Function_Return bPrivateChanged
+    End_Function
+    
+    Function HasImage Returns Boolean
+        String sValue
+        Boolean bHasImage
+        
+        WebGet psValue to sValue
+        Move (sValue contains '<img') to bHasImage
+        Function_Return bHasImage
+    End_Function
+    
+    Procedure SaveImages
+        Integer iCount iIndex
+        Boolean bNoNewImages
+        String sValue
+        String[] saCurrentUUIDs saOnLoadUUIDs
+        
+        WebGet psValue to sValue
+        Get ImageUUIDsByValue sValue to saCurrentUUIDs
+        
+        WebGet psaImageUUIDs to saOnLoadUUIDs
+        Move (IsSameArray(saCurrentUUIDs,saOnLoadUUIDs)) to bNoNewImages
+        
+        If (bNoNewImages) Procedure_Return
+        
+        For iCount from 0 to (SizeOfArray(saOnLoadUUIDs)-1)
+            Move (SearchArray(saOnLoadUUIDs[iCount], saCurrentUUIDs)) to iIndex
+            If (iIndex = -1) ;
+                Send DeleteImage saOnLoadUUIDs[iCount]
+        Loop
+        
+        Send CommitFiles
+    End_Procedure
+    
+    Procedure DeleteImages
+        Integer iCount
+        String[] saImageUUIDs saEmpty
+        
+        WebGet psaImageUUIDs to saImageUUIDs
+        
+        For iCount from 0 to (SizeOfArray (saImageUUIDs))
+            Send DeleteImage saImageUUIDs[iCount]
+        Loop
+        
+        WebSet psaImageUUIDs to saEmpty
+    End_Procedure
+    
+    Procedure Clear
+        Send ClientAction "clear"
+    End_Procedure
+    
+    Procedure ClearHistory
+        Send ClientAction "clearHistory"
+    End_Procedure
+    
+    {MethodType=Event}
+    // Returns whether the file is allowed to be uploaded.
+    Function OnNewRegisteredImage String sFilePath Returns Boolean
+        //stub
+        Function_Return True
+    End_Function
+    
+    {Visibility=Private}
+    Function RequestImageLink Returns String
+        Integer iCount
+        String sUrl sFileExtension sTemp sImageUrl
+        Boolean bExists
+        String[] saImageUUIDs
+        
+        Get psUploadDir to sUrl
+        WebGet psaImageUUIDs to saImageUUIDs
+        
+        For iCount from 0 to (SizeOfArray(saImageUUIDs) - 1)
+            Move (sUrl + saImageUUIDs[iCount]) to sTemp
+            File_Exist sTemp bExists
+            If (bExists) Begin
+                Get DownloadURL of ghoWebResourceManager sTemp to sImageUrl
+                Move (saImageUUIDs[iCount] + ';' + sImageUrl) to saImageUUIDs[iCount]
+            End
+        Loop
+
+        Function_Return (StrJoinFromArray(saImageUUIDs, (Character(10))))
+    End_Function
+    
+    {Visibility=Private}
+    Procedure DeleteImage String sUUID
+        String sUrl sFileExtension
+        Boolean bExists
+        String[] saImageUUIDs
+        
+        Get psUploadDir to sUrl
+        WebGet psaImageUUIDs to saImageUUIDs
+        If (SearchArray(sUUID, saImageUUIDs) = -1) Procedure_Return
+        
+        If (sUrl <> '') Begin
+            File_Exist (sUrl + "\" + sUUID) bExists
+            If (bExists) ;
+                EraseFile (sUrl + "\" + sUUID + sFileExtension)
+        End
+    End_Procedure
+    
+   #IF !@>=200
+    // Augment to make sure RequestImageLink is allowed when the control is disabled as well.
+    { Visibility=Private }
+    Procedure AllowServerAction Boolean  ByRef bAllow String sMethodName Handle hoMessage Boolean bIsFunction
+        If (hoMessage = RefFunc(RequestImageLink)) Begin
+            Get IsControlAccessible False (pbNoUpdateIfHidden(Self)) to bAllow
+        End
+        Else Begin
+            Forward Send AllowServerAction (&bAllow) sMethodName hoMessage bIsFunction
+        End
+    End_Procedure
+    #ENDIF
+    
+    // Sent by DDO when there is a clear/find/save/delete.
+    //
+    // eMode - Determines the type of DDO operation which generated this refresh message. 
+    //         It may be one of the following:
+    //         Mode_Clear:             Used only for DEOs attached to the DDO that was the
+    //                                 "origin" of a Clear operation, (i.e., the DDO received
+    //                                 the original Clear message). All other DDOs Send their 
+    //                                 DEOs the refresh message passing mode_find_or_clear_set.  
+    //         Mode_Find_or_Clear_Set: Used for DEOs attached to DDOs which have Found and/or cleared records.  
+    //         Mode_Clear_All:         Used for DEOs attached to any DDO that participated in a clear_all operation.  
+    //         Mode_Delete:            Used for DEOs attached to any DDO that performed a successful deletion. 
+    //                                 DDOs that were merely updated as the result of a deletion Use Mode_Find_or_Clear_Set.  
+    //         Mode_Save:              Used for DEOs attached to any DDO involved in a successful Save operation. 
+    { MethodType=Event }
+    Procedure Refresh Integer eMode
+        Boolean bActive bAppSynching bDataAware
+        Handle hoDD
+        String[] saImageUUIDs
+        
+        Get Active_State to bActive
+        Get AppSynching to bAppSynching
+        Get IsDataAware to bDataAware
+
+        If (bDataAware and bActive and not(bAppSynching)) Begin
+            Case Begin
+                Case (eMode = MODE_CLEAR_ALL or eMode = MODE_FIND_OR_CLEAR_SET) 
+                    Send ClearHistory
+                    Case Break
+                Case (eMode = MODE_SAVE)
+                    Send SaveImages
+                    Case Break
+                Case (eMode = MODE_DELETE)
+                    Send DeleteImages
+                    Case Break
+            Case End
+        End
+        
+        Forward Send Refresh eMode
+        
+        If (not(bAppSynching) and eMode = MODE_FIND_OR_CLEAR_SET) Begin
+            Get ImageUUIDsByValue to saImageUUIDs
+            WebSet psaImageUUIDs to saImageUUIDs
+        End
+    End_Procedure
+    
+    Function IsDataAware Returns Boolean
+        Handle hoDD hFile hField
+        Get Server to hoDD
+        Get Data_File to hFile
+        Get Data_Field to hField
+        Function_Return (hoDD and hFile and hField)
+    End_Function
+    
+    Procedure OnFileFinished String sFileName String sLocalPath
+        String[] aData
+        
+        Move (ExtractFileName (sLocalPath)) to aData[0]
+        
+        Send ClientAction "imageUploaded" aData
+    End_Procedure
+
+    Procedure End_Construct_Object
+        WebPublishFunction RegisterNewImage
+        WebPublishFunction RequestImageLink
+        WebPublishProcedure OnSelectionChanged
+        
+        
+        Send PublishFileUploadMethods
+        Send End_Define_cWebQuillBaseFileUpload
+        Forward Send End_Construct_Object
+        
+        Send RegisterDownloadFolder of ghoWebResourceManager (psUploadDir(Self))
+        Send RegisterUploadFolder of ghoWebResourceManager (psTemporaryDir(Self))
+    End_Procedure
+End_Class
