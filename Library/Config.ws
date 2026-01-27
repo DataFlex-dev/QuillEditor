@@ -1,11 +1,10 @@
 [Workspace]
-Home=.\
-AppSrcPath=.\AppSrc
-AppHTMLPath=.\AppHtml
-BitmapPath=.\
-IdeSrcPath=.\
-DataPath=.\
-DDSrcPath=.\
-HelpPath=.\
-ProgramPath=.\
-Description=QuillJS Editor
+Home=.
+AppHTMLPath=AppHtml
+AppSrcPath=AppSrc
+DataPath=
+DDSrcPath=
+IdeSrcPath=IdeSrc
+ProgramPath=
+FileList=DummyFilelist.cfg
+Description=Light weight rich text editor.
