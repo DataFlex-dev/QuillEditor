@@ -217,7 +217,7 @@ Class cWebRichTextEditor is a cWebBaseDEO
         
         WebGet psaImageUUIDs to saImageUUIDs
         
-        For iCount from 0 to (SizeOfArray (saImageUUIDs))
+        For iCount from 0 to (SizeOfArray (saImageUUIDs) -1)
             Send DeleteImage saImageUUIDs[iCount]
         Loop
         
