@@ -1,0 +1,17 @@
+{
+    "dependencies": {
+        "DataFlex-dev/AVCheck": {
+            "ref": "1.0.0"
+        },
+        "DataFlex-dev/File Type": {
+            "ref": "1.0.0"
+        },
+        "DataFlex-dev/Secure Upload": {
+            "ref": "1.0.0"
+        },
+        "DataFlex-dev/XSS Sanitizer": {
+            "ref": "1.1.0"
+        }
+    },
+    "lockVersion": "1.0.0"
+}
