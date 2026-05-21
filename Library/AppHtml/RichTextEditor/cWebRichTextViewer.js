@@ -1,3 +1,17 @@
+function dfHighlightCodeBlock(block) {
+    const sLanguage = block.getAttribute("data-language");
+
+    if (sLanguage && hljs.getLanguage(sLanguage)) {
+        block.classList.add("language-" + sLanguage);
+    }
+
+    if (typeof hljs.highlightElement === "function") {
+        hljs.highlightElement(block);
+    } else {
+        hljs.highlightBlock(block);
+    }
+}
+
 //construction
 df.WebRichTextViewer = class WebRichTextViewer extends df.WebHtmlBox {
     constructor(sName, oPrnt) {
@@ -31,7 +45,7 @@ df.WebRichTextViewer = class WebRichTextViewer extends df.WebHtmlBox {
             languages: hljs.listLanguages()
         });
         hTempDom.querySelectorAll('pre').forEach((block) => {
-            hljs.highlightBlock(block);
+            dfHighlightCodeBlock(block);
         });
         this.psHtml = hTempDom.outerHTML;
 
