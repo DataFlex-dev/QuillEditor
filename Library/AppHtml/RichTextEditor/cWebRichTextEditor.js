@@ -6,6 +6,20 @@ if an image is deleted then they need to be deleted on the server too.
 const InlineBlot = Quill.import("blots/embed");
 const Delta = Quill.import("delta");
 const Scope = Quill.import("parchment").Scope;
+const SyntaxModule = Quill.import("modules/syntax");
+
+const aQuillCodeLanguages = [
+    { key: "dataflex", label: "DataFlex" },
+    { key: "sql", label: "SQL" },
+    { key: "html", label: "HTML" },
+    { key: "css", label: "CSS" },
+    { key: "javascript", label: "JS" },
+    { key: "xml", label: "XML" },
+];
+
+if (SyntaxModule?.DEFAULTS) {
+    SyntaxModule.DEFAULTS.languages = aQuillCodeLanguages;
+}
 class DFRichTextImage extends InlineBlot {
     static create(aData) {
         const node = super.create();
@@ -736,18 +750,23 @@ df.WebRichTextEditor = class WebRichTextEditor extends WebRichTextMixin {
         this.makeQuillInlineCSS();
 
         let additionalFeatures = [];
+        let oSyntaxConfig = false;
         if (this.pbAllowImages) additionalFeatures.push("image");
         if (this.pbAllowCodeSections) {
             hljs.configure({
                 languages: hljs.listLanguages(),
             });
+            oSyntaxConfig = {
+                hljs,
+                languages: aQuillCodeLanguages,
+            };
             additionalFeatures.push("code-block");
         }
 
         this._hEditor = new Quill(this._eControl, {
             modules: {
                 // Code highlight
-                syntax: true,
+                syntax: oSyntaxConfig,
                 resize: this.pbImageResizer ? {
                     // set embed tags to capture resize
                     embedTags: ["VIDEO", "IFRAME", "IMG"],
