@@ -947,16 +947,26 @@ df.WebRichTextEditor = class WebRichTextEditor extends WebRichTextMixin {
             if (that._hEditor.getLength() > that.piMaxLength) {
                 that._hEditor.deleteText(that.piMaxLength, that._hEditor.getLength());
             }
+
         });
 
-        if (this.pbAllowImages)
-            this._hEditor.root.addEventListener(
+        if (this.pbAllowImages) {
+            this._hEditor.container.addEventListener(
+                "dragover",
+                {
+                    handleEvent: this.dragOverEventHandler.bind(this),
+                },
+                true
+            );
+
+            this._hEditor.container.addEventListener(
                 "drop",
                 {
                     handleEvent: this.dropEventHandler.bind(this),
                 },
-                false
+                true
             );
+        }
 
         this.set_pbEnabled(this.pbEnabled);
     }
@@ -1059,43 +1069,63 @@ df.WebRichTextEditor = class WebRichTextEditor extends WebRichTextMixin {
     }
 
     // Image support - Handlers /////////////////////////////////////////
+    dragOverEventHandler(oEvent) {
+        if (!this.pbEnabled) return;
+
+        if (oEvent.dataTransfer && this.getDroppedImageFiles(oEvent.dataTransfer).length > 0) {
+            oEvent.preventDefault();
+            oEvent.dataTransfer.dropEffect = "copy";
+        }
+    }
+
     dropEventHandler(oEvent) {
         if (!this.pbEnabled) return;
 
-        //if the imagefile is dragged into the editor.
+        if (typeof oEvent.clipboardData !== "undefined") return;
+
+        const aFiles = this.getDroppedImageFiles(oEvent.dataTransfer);
+        if (aFiles.length === 0) {
+            this.handleDroppedHtml(oEvent.dataTransfer.items);
+            return;
+        }
+
         oEvent.preventDefault();
-        let aFiles, aItems;
-
-        if (typeof oEvent.clipboardData === "undefined") {
-            if (oEvent.dataTransfer.files.length > 0)
-                aFiles = oEvent.dataTransfer.files;
-
-            if (oEvent.dataTransfer.items.length > 0) {
-                aItems = oEvent.dataTransfer.items;
-            }
-        } else {
-            return; //invalid action
-        }
-
+        oEvent.stopPropagation();
         df.dragdrop.stopDropZones(true);
+        this._hEditor.focus();
+        this.imageHandler(aFiles);
+    }
 
-        // Handle Images
-        if (aFiles !== undefined) this.imageHandler(aFiles);
-
-        // Handle dropped text
-        if (aItems !== undefined) {
-            for (const item of aItems) {
-                if (item.kind === "string" && item.type.match(/^text\/html/)) {
-                    // Drag data item is HTML
-                    item.getAsString((html) => {
-                        this._hEditor.clipboard.dangerouslyPasteHTML(
-                            this._hEditor.getText().length,
-                            html
-                        );
-                    });
-                }
+    handleDroppedHtml(aItems) {
+        for (let i = 0; aItems && i < aItems.length; i++) {
+            if (aItems[i].kind === "string" && aItems[i].type.match(/^text\/html/)) {
+                aItems[i].getAsString((html) => {
+                    this._hEditor.clipboard.dangerouslyPasteHTML(
+                        this._hEditor.getText().length,
+                        html
+                    );
+                });
             }
         }
+    }
+
+    getDroppedImageFiles(oDataTransfer) {
+        const aImages = [];
+
+        for (let i = 0; oDataTransfer.files && i < oDataTransfer.files.length; i++) {
+            if (oDataTransfer.files[i].type.split("/")[0] === "image") {
+                aImages.push(oDataTransfer.files[i]);
+            }
+        }
+
+        for (let i = 0; oDataTransfer.items && i < oDataTransfer.items.length; i++) {
+            if (oDataTransfer.items[i].kind === "file" && oDataTransfer.items[i].type.split("/")[0] === "image") {
+                const oFile = oDataTransfer.items[i].getAsFile();
+                if (oFile && aImages.indexOf(oFile) === -1) aImages.push(oFile);
+            }
+        }
+
+        return aImages;
     }
 
     // Handler for the image button in the toolbar
@@ -1154,7 +1184,7 @@ df.WebRichTextEditor = class WebRichTextEditor extends WebRichTextMixin {
                     const fr = new FileReader();
                     fr.onload = () => {
                         that._hEditor.insertEmbed(
-                            that._hEditor.getSelection(true).index,
+                            that._hEditor.getSelection(true)?.index || that._hEditor.getLength(),
                             "DFRichTextImage",
                             [
                             { sName: "uuid", sValue: that._aUploadedImages[i] },
