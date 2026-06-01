@@ -35,8 +35,10 @@ When adding the library manually, include the Quill Editor assets in this order.
 <link href="RichTextEditor/quilljs/modules/syntax/styles/vs.css" rel="stylesheet" type="text/css" />
 <link href="RichTextEditor/quilljs/modules/table-widget/hover.css" rel="stylesheet" type="text/css" />
 <link href="RichTextEditor/quilljs/modules/table-widget/widget.css" rel="stylesheet" type="text/css" />
-<link href="RichTextEditor/quilljs/modules/resize.css" rel="stylesheet" type="text/css" />
+<link href="RichTextEditor/quilljs/modules/resize.css" rel="stylesheet" type="text/css" />    
+<link href="RichTextEditor/quilljs/modules/syntax/styles/dataflex-studio.css" rel="stylesheet" type="text/css" />
 <script src="RichTextEditor/quilljs/modules/syntax/highlight.pack.js"></script>
+<script src="RichTextEditor/quilljs/modules/syntax/styles/dataflex.js"></script>
 <script src="RichTextEditor/quilljs/quill.min.js"></script>
 <script src="RichTextEditor/quilljs/modules/table-widget/index.js"></script>
 <script src="RichTextEditor/quilljs/modules/image-resize.min.js"></script>
