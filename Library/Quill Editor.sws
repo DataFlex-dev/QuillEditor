@@ -1,6 +1,6 @@
 {
     "dependencies": [
-        "DataFlex-dev/Secure Upload#1.0.0",
+        "DataFlex-dev/Secure Upload#1.0.1",
         "DataFlex-dev/XSS Sanitizer#1.1.0"
     ],
     "description": "Light weight rich text editor.",
@@ -28,7 +28,7 @@
             "${AppHtml}/RichTextEditor"
         ],
         "license": "BSD-3-Clause",
-        "version": "1.1.0"
+        "version": "1.1.1"
     },
     "paths": {
         "fileList": "DummyFilelist.cfg"
