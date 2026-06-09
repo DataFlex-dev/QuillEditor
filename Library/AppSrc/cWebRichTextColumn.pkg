@@ -1,0 +1,115 @@
+Use cWebColumn.pkg
+Use cWebRichText_Mixin.pkg
+
+Enum_List
+    Define cAllClosed
+    Define cOnlyFirstOpen
+    Define cAllOpen
+    Define cAccordion
+End_Enum_List
+
+Class cWebRichTextColumn is a cWebColumn
+    Import_Class_Protocol cWebRichText_Mixin
+
+    Procedure Construct_Object
+        Forward Send Construct_Object
+        
+        Send Define_cWebRichText_Mixin
+
+        Set pbAllowHtml to True
+        
+        { WebProperty=Server InitialValue = '' Visibility=Private }
+        Property String psSavePath
+        { WebProperty=Server }
+        Property String psDirectoryName "RichTextEditor\Uploads"
+        { WebProperty=Server }
+        Property Integer piFile               0
+        { WebProperty=Client }
+        Property String psActiveRowId
+        { WebProperty=Client }
+        { EnumList="cAllClosed,cOnlyFirstOpen,cAllOpen,cAccordion" }
+        Property Integer piCollapseMode cOnlyFirstOpen
+        
+        { WebProperty=Client }
+        Property String psClientOnClick
+        { WebProperty=Client }
+        Property Boolean pbServerOnClick
+
+        Set psJSClass to "df.WebRichTextColumn"
+    End_Procedure
+
+    Function RequestImageLink String sUUIDCollection Returns String
+        String sUrl
+        WebGet psSavePath to sUrl
+        Function_Return (QuillImageDownloadLinks(sUrl, sUUIDCollection))
+    End_Function
+    
+    Procedure LoadGridCell tWebCell ByRef tCell
+        Integer iFile iField
+        String sValue sRowId
+        Boolean bAllowImages
+        
+        Get Data_File  to iFile
+        Get Data_Field to iField
+        
+        If (iFile <> 0) Begin
+            // If there is a data binding then get the file.field value....
+            Get_Field_Value iFile iField to sValue
+        End
+        Else Begin
+            // if there is no data binding then fire the calculated field event....
+            WebGet piFile to iFile
+            WebGet psValue to sValue
+            Send OnSetCalculatedValue (&sValue)         // calculated value
+        End
+        
+        WebGet pbAllowImages to bAllowImages
+        If (bAllowImages) ;
+            Move (RequestImages(Self, sValue)) to sValue
+
+        If (iFile <> 0) ;
+            Move (SerializeRowID(GetRowId(iFile))) to sRowId
+        Else ;
+            Move "" to sRowId
+        Move ('<div data-dfrowid="' + sRowId + '">' + sValue + "</div>" ) to sValue
+        
+        
+        // Convert the value into the correct format for transport....                    
+        Get ConvertToTransport (RefFunc(psValue)) sValue cArgStr to sValue
+        
+        // Give a chance to add custom tooltips & CSS Classnames
+        Send OnDefineTooltip (&tCell.sTooltip)
+        Send OnDefineCssClass (&tCell.sCssClassName)
+        
+        Move sValue to tCell.sValue
+    End_Procedure
+
+    Procedure OnDefineTooltip String ByRef sTooltip
+        Move ' ' to sTooltip
+    End_Procedure
+    
+    Procedure Collapse
+        Send ClientAction "collapse"
+    End_Procedure
+    
+    { MethodType=Event }
+    Procedure OnClick String sValue String sRowId
+    End_Procedure
+    
+    Procedure RegisterQuillDownLoadFolder
+        String sPath sDirectoryName
+
+        WebGet psDirectoryName to sDirectoryName
+        Send QuillRegisterDownloadFolder sDirectoryName (&sPath)
+        Set psSavePath to sPath
+    End_Procedure
+
+    Procedure End_Construct_Object
+        WebPublishFunction RequestImageLink
+        WebPublishProcedure OnClick
+
+        Forward Send End_Construct_Object
+
+        Send RegisterQuillDownLoadFolder
+    End_Procedure
+End_Class

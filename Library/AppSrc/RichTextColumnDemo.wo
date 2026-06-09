@@ -1,0 +1,74 @@
+Use cWebView.pkg
+Use cWebPanel.pkg
+Use cWebList.pkg
+Use cWebColumn.pkg
+Use cWebRichTextColumn.pkg
+Use cWebRichTextViewer.pkg
+Use cWebRichTextEditor.pkg
+
+Object oRichTextColumnDemo is a cWebView
+    Set psCaption to "Rich Text Column Demo"
+    Set piColumnCount to 12
+    Set piWidth to 900
+
+    Object oWebMainPanel is a cWebPanel
+        Set piColumnCount to 12
+
+        Object oSampleEditor is a cWebRichTextEditor
+            Set piColumnSpan to 12
+            Set piHeight to 180
+            Set pbAllowCodeSections to True
+            Set pbAllowShowHtml to True
+            Set pbAllowTables to True
+            Set Text to '<p>Edit rich text here. The list below shows the same kind of Quill HTML in a cWebRichTextColumn.</p>'
+        End_Object
+
+        Object oSampleViewer is a cWebRichTextViewer
+            Set piColumnSpan to 12
+        
+            Procedure OnShow
+                Forward Send OnShow
+                Send UpdateHtml '<p><strong>Viewer sample:</strong> use cWebRichTextViewer for a single rich text value.</p>'
+            End_Procedure
+        End_Object
+
+        Object oSampleList is a cWebList
+            Set piColumnSpan to 12
+            Set piHeight to 360
+            Set pbDataAware to False
+            Set peDbGridType to gtManual
+            Set pbShowHeader to True
+
+            Object oTitle is a cWebColumn
+                Set psCaption to "Sample"
+                Set piWidth to 30
+            End_Object
+
+            Object oBody is a cWebRichTextColumn
+                Set psCaption to "Rich Text"
+                Set piWidth to 70
+                Set pbAllowImages to False
+                Set piCollapseMode to cAccordion
+            End_Object
+
+            Procedure OnManualLoadData tWebRow[] ByRef aTheRows String ByRef sCurrentRowID tWebGroupConfig[] ByRef aTheGroups tWebGroupHeader[] ByRef aTheGroupHeaders
+                Integer iColTitle iColBody
+
+                Get piColumnId of oTitle to iColTitle
+                Get piColumnId of oBody to iColBody
+
+                Move "intro" to aTheRows[0].sRowId
+                Move "Intro" to aTheRows[0].aCells[iColTitle].sValue
+                Move '<h2>Quill content in a list</h2><p>This column renders stored Quill HTML using the same styling as the editor and viewer.</p>' to aTheRows[0].aCells[iColBody].sValue
+
+                Move "code" to aTheRows[1].sRowId
+                Move "Code" to aTheRows[1].aCells[iColTitle].sValue
+                Move '<p>Syntax highlighting works when highlight.js is included.</p><pre data-language="dataflex">Procedure OnClick&#10;    Send Info_Box "Hello from DataFlex"&#10;End_Procedure</pre>' to aTheRows[1].aCells[iColBody].sValue
+
+                Move "list" to aTheRows[2].sRowId
+                Move "Formatting" to aTheRows[2].aCells[iColTitle].sValue
+                Move '<p>Common Quill formatting is supported:</p><ol><li data-list="ordered"><span class="ql-ui" contenteditable="false"></span>bold and italic text</li><li data-list="ordered"><span class="ql-ui" contenteditable="false"></span>lists</li><li data-list="ordered"><span class="ql-ui" contenteditable="false"></span>tables and code blocks</li></ol>' to aTheRows[2].aCells[iColBody].sValue
+            End_Procedure
+        End_Object
+    End_Object
+End_Object

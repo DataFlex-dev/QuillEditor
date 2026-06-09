@@ -1,0 +1,37 @@
+{
+    "dependencies": [
+        "DataFlex-dev/Secure Upload#1.0.1",
+        "DataFlex-dev/XSS Sanitizer#1.1.0"
+    ],
+    "description": "Light weight rich text editor.",
+    "df": 26.0,
+    "package": {
+        "df-max": 26.0,
+        "df-min": 26.0,
+        "htmlIncludes": [
+            "RichTextEditor/quilljs/quill.snow.css",
+            "RichTextEditor/quilljs/modules/syntax/styles/vs.css",
+            "RichTextEditor/quilljs/modules/table-widget/hover.css",
+            "RichTextEditor/quilljs/modules/table-widget/widget.css",
+            "RichTextEditor/quilljs/modules/resize.css",
+            "RichTextEditor/quilljs/modules/syntax/styles/dataflex-studio.css",
+            "RichTextEditor/quilljs/modules/syntax/highlight.pack.js",
+            "RichTextEditor/quilljs/modules/syntax/styles/dataflex.js",
+            "RichTextEditor/quilljs/quill.min.js",
+            "RichTextEditor/quilljs/modules/table-widget/index.js",
+            "RichTextEditor/quilljs/modules/image-resize.min.js",
+            "RichTextEditor/cWebRichTextEditor.js",
+            "RichTextEditor/cWebRichTextViewer.js",
+            "RichTextEditor/cWebRichTextColumn.js"
+        ],
+        "icon": "Icon.png",
+        "install": [
+            "${AppHtml}/RichTextEditor"
+        ],
+        "license": "BSD-3-Clause",
+        "version": "1.1.2"
+    },
+    "paths": {
+        "fileList": "DummyFilelist.cfg"
+    }
+}

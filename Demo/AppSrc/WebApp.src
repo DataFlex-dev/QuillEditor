@@ -87,6 +87,11 @@ Object oWebApp is a cWebApp
                     Set psCaption to "FeedbackSelect"
                     Set psLoadViewOnClick to "oFeedbackSelect"
                 End_Object
+
+                Object oRichTextColumnDemoItem is a cWebMenuItemLoadView
+                    Set psCaption to "Rich text column demo"
+                    Set psLoadViewOnClick to "oRichTextColumnDemo"
+                End_Object
             End_Object  
         End_Object  
         
@@ -116,6 +121,7 @@ Object oWebApp is a cWebApp
     Use WebResourceManager.wo
     Use FeedbackCreate.wo
     Use FeedbackSelect.wo
+    Use RichTextColumnDemo.wo
     
 End_Object
 
