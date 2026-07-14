@@ -1,7 +1,8 @@
 {
     "dependencies": [
-        "DataFlex-dev/Secure Upload#1.0.1",
-        "DataFlex-dev/XSS Sanitizer#1.1.0"
+        "DataFlex-dev/Secure Upload#^1.0.0",
+        "DataFlex-dev/XSS Sanitizer#^1.0.0",
+        "DataFlex-dev/Web UI#^1.0.0"
     ],
     "description": "Light weight rich text editor.",
     "df": 26.0,
