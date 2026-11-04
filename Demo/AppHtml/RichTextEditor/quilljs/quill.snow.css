@@ -104,7 +104,7 @@
     /* Chrome 21+, Safari 6.1+, Opera 15+ */
 }
 
-.ql-editor pre:not(.ql-syntax) {
+.ql-editor pre:not(.ql-syntax):not([data-language]) {
     padding-bottom: 0px !important;
 }
 .ql-snow .ql-editor .ql-code-block-container {
@@ -1328,6 +1328,10 @@
 
 .ql-code-block-container {
     position: relative
+}
+
+.ql-editor pre[data-language] {
+    padding-bottom: .35em;
 }
 
 .ql-code-block-container .ql-ui {

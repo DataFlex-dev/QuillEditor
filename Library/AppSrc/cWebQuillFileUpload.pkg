@@ -343,7 +343,7 @@ Class cWebQuillFileUpload_Mixin is a Mixin
     
     {Visibility=Private}
     Procedure MakeUploadDirectory String ByRef sDir
-        Boolean bExists
+        Boolean bExists bOk
         
         // File_Exists requires no /
         If (Right(sDir, 1) = "\" or Right(sDir, 1) = "/") Begin
@@ -353,7 +353,7 @@ Class cWebQuillFileUpload_Mixin is a Mixin
         // Create if not exists
         File_Exist sDir bExists
         If (not(bExists)) Begin
-            Make_Directory sDir
+            Get CreateDirectoryRecursive sDir to bOk
             
             // If it still does not exist cancel
             File_Exist sDir bExists

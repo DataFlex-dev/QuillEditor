@@ -1,0 +1,111 @@
+/*
+ * DataFlex Studio color theme for highlight.js and Quill code blocks.
+ * Quill stores the active language on .ql-code-block[data-language="..."]
+ * and wraps tokens as .ql-token.hljs-*
+ */
+
+/* ---- Light theme (matches Studio light mode) ---- */
+
+.hljs.language-dataflex,
+.ql-code-block[data-language="dataflex"] {
+    color: #000000;                           /* Text: default black */
+}
+.hljs.language-dataflex .hljs-keyword,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-keyword {
+    color: #0000ff;                           /* Keywords: blue */
+    font-weight: normal;
+}
+.hljs.language-dataflex .hljs-built_in,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-built_in {
+    color: #a90000;                           /* Operators (word): red */
+}
+.hljs.language-dataflex .hljs-comment,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-comment {
+    color: #008000;                           /* Comments: green */
+    font-style: normal;
+}
+.hljs.language-dataflex .hljs-string,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-string {
+    color: #800080;                           /* Strings: purple */
+}
+.hljs.language-dataflex .hljs-number,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-number {
+    color: #000000;                           /* Numbers: default */
+}
+.hljs.language-dataflex .hljs-meta,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-meta {
+    color: #a44e86;                           /* Metadata */
+}
+.hljs.language-dataflex .hljs-meta .hljs-keyword,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-meta.hljs-keyword {
+    color: #506d8d;                           /* Metadata tags */
+}
+.hljs.language-dataflex .hljs-variable,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-variable {
+    color: #000000;                           /* Field references */
+}
+.hljs.language-dataflex .hljs-operator,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-operator {
+    color: #a90000;                           /* Symbol operators */
+}
+.hljs.language-dataflex .hljs-literal,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-literal {
+    color: #0000ff;                           /* True/False/Nothing */
+}
+.hljs.language-dataflex .hljs-title,
+.ql-code-block[data-language="dataflex"] .ql-token.hljs-title {
+    color: #000000;
+}
+
+/* ---- Dark theme (matches Studio dark mode) ---- */
+
+[data-theme="dark"] .hljs.language-dataflex,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] {
+    color: #fffff0;                           /* Text */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-keyword,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-keyword {
+    color: #37d4ff;                           /* Keywords */
+    font-weight: normal;
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-built_in,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-built_in {
+    color: #ffff80;                           /* Operators (word) */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-comment,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-comment {
+    color: #3cdc46;                           /* Comments */
+    font-style: normal;
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-string,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-string {
+    color: #ffbe9a;                           /* Strings */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-number,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-number {
+    color: #ffff80;                           /* Numbers */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-meta,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-meta {
+    color: #ff78b4;                           /* Metadata */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-meta .hljs-keyword,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-meta.hljs-keyword {
+    color: #ff78b4;                           /* Metadata tags */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-variable,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-variable {
+    color: #fffff0;                           /* Field references */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-operator,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-operator {
+    color: #ffff80;                           /* Symbol operators */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-literal,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-literal {
+    color: #37d4ff;                           /* True/False/Nothing */
+}
+[data-theme="dark"] .hljs.language-dataflex .hljs-title,
+[data-theme="dark"] .ql-code-block[data-language="dataflex"] .ql-token.hljs-title {
+    color: #fffff0;
+}

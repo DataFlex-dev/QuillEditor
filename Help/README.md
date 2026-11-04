@@ -1,10 +1,10 @@
-# Help Directory
+# Quill Editor Help
 
-This directory is designated for documentation and release notes related to the project.
+This directory is reserved for Quill Editor documentation and release notes.
 
 ## Contents
 
-- **Documentation**: All project-related documentation should be stored here.
-- **Release Notes**: Current and past release notes should be maintained in this directory.
+- **Documentation**: Usage notes, setup guidance, and examples for the Quill Editor library.
+- **Release Notes**: Current and past release notes for the library.
 
-Please ensure that all relevant documents are kept up to date and organized within this directory.
+Keep project documentation in this directory when it does not belong directly in the root, library, or demo README.
